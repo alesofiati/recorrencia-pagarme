@@ -7,14 +7,15 @@ use PagarMe;
 class SubscriptionPagarMe{
     
     protected $pagarMe;
-
-    function __construct(string $key_api)
+    protected $post_back;
+    function __construct(string $key_api, $post_back = null)
     {
         $this->pagarMe = new Pagarme\Client($key_api,
             [
                 'headers' => ['v2' => '2017-07-17']
             ]
         );
+        $this->post_back = $post_back != null ? $post_back : '';
     }
 
     /**
@@ -22,15 +23,8 @@ class SubscriptionPagarMe{
      * 
      * @return [type]
      */
-    public function createPlan(array $data, int $charges = null){
-        $plan = $this->pagarMe->plans()->create([
-            'amount' => $data['amount'],
-            'days' => '30',
-            'name' => $data['name'],
-            'trial_days' => 30,
-            'payment_methods' => $data['payment_methods'],
-            'charges' => $charges == null ? 0 : $charges
-        ]);
+    public function createPlan(array $data){
+        $plan = $this->pagarMe->plans()->create($data);
         return $plan->id;
     }
 
@@ -56,11 +50,11 @@ class SubscriptionPagarMe{
      * @return [type]
      */
     public function updatePlan(int $plan_id, array $data){
-        return $this->pagarMe->plans()->update([
-            'id' => $plan_id,
-            'name' => $data['name'],
-            'trial_days' => $data['trial_days'],
-        ]);
+        /**
+         * plan_id -> sempre obrigatorio para atualizar um plano
+        */
+        $update = array_merge(['id' => $plan_id], $data);
+        return $this->pagarMe->plans()->update($update);
     }
 
     /**
@@ -75,7 +69,7 @@ class SubscriptionPagarMe{
             'plan_id' => $plan_id,
             'payment_method' => 'credit_card',
             'card_id' => $card_id,
-            'postback_url' => 'https://61c07e03e83ea7bb9f3929668716eba2.m.pipedream.net',//definir qual sera a url para retorno das assinaturas
+            'postback_url' => $this->post_back,//definir qual sera a url para retorno das assinaturas
             'customer' => [
                 'email' => $customer['email'],
                 'name' => $customer['name'],
@@ -120,13 +114,8 @@ class SubscriptionPagarMe{
      */
     public function updateSubscription(int $id, array $options){
         $update = array_merge(['id' => $id], $options);
-        try {
-            $result =  $this->pagarMe->subscriptions()->update($update);
-            return $result;
-        } catch (\Throwable $th) {
-            return $th->getError;
-        }
-        
+        $result =  $this->pagarMe->subscriptions()->update($update);
+        return $result;
     }
 
     /**
@@ -135,7 +124,8 @@ class SubscriptionPagarMe{
      * @return [type]
      */
     public function cancelSubscription(int $subscription_id){
-        return $this->pagarMe->subscriptions()->cancel(['id' => $subscription_id]);
+        $cancel =  $this->pagarMe->subscriptions()->cancel(['id' => $subscription_id]);
+        return $cancel;
     }
 
     /**

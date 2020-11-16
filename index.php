@@ -29,6 +29,9 @@ if(isset($action)){
             echo "</pre>";
         break;
         case 'create_plan':
+            // obrigatorio ter esses 3 parametros para criar um plano
+            //parametros opcionais
+            //trial_days <-- dias de graça do produto, charges <-- numero de cobranças
             $plan = [
                 'amount' => 15000,
                 'name' => 'Plano Teste 17/11/2020',
