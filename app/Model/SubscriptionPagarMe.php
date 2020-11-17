@@ -8,7 +8,7 @@ class SubscriptionPagarMe{
     
     protected $pagarMe;
     protected $post_back;
-    function __construct(string $key_api, $post_back = null)
+    function __construct(string $key_api, string $post_back = null)
     {
         $this->pagarMe = new Pagarme\Client($key_api,
             [
@@ -85,8 +85,6 @@ class SubscriptionPagarMe{
                     'ddd' => $customer['ddd'],
                     'number' => $customer['number']
                 ],
-                'sex' => 'other',
-                'born_at' => '1970-01-01',
             ],
         ]);
     }
